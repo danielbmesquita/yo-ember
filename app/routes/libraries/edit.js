@@ -3,7 +3,8 @@ import Ember from 'ember';
 export default Ember.Route.extend({
 
   isClicked: false,
-
+  _transitioning: false,
+  
   waitConfirmation() {
     return new Promise((resolve, reject) => {
       console.log("Wait");
@@ -30,28 +31,36 @@ export default Ember.Route.extend({
 
       let model = this.controller.get('model');
       let isClicked = this.get('isClicked');
-        
-      
-      return this.waitConfirmation().then((value) => {
-        console.log(value);
-        if (value) {
-          transition.abort();
-        }
-        
-        // if (model.get('hasDirtyAttributes')) {
-        //   console.log(model);
-        //   //$('#transitionModal').modal('show');
-        //   transition.abort();
-        //   // if (isClicked) {
-        //   //   model.rollbackAttributes();
-        //   // } else {
-        //   //   this.set('isClicked', false);
-        //   //   transition.abort();
 
-        //   // }
-        // }
+    //   if (model.get('hasDirtyAttributes')) {
+    //     $('#transitionModal').modal('show');        
+    //     if (isClicked) {
+    //      model.rollbackAttributes();
+    //    } else {
+    //     this.set('isClicked', false);
+    //     transition.abort();
+    //   }
+    // }  
+
+    if(!_transitioning){
+      $("#transitionModal").modal({
+        resizable: false,
+        modal: true,
+        draggable: false,
+        buttons: {
+          "Confirm": function() {
+            self._transitioning = true;
+            transition.retry().then(self._transitioning = false);
+            $(this).modal( "hide" );
+          },
+          "Cancel": function() {
+            transition.abort();
+            $(this).modal( "hide" );
+          }
+        }
       });
-      
-    }
+    }    
   }
+
+}
 });
